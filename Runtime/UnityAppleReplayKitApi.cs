@@ -9,7 +9,7 @@ namespace Dioeos.UnityAppleReplayKit
 #if UNITY_IOS && !UNITY_EDITOR
       return NativeHelloBridgeiOS.SayHello();
 #else
-      return "Not Properly calling";
+      return "Not properly calling";
 #endif
     }
   }
