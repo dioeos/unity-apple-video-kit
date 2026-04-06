@@ -1,1 +1,1 @@
-Repository for Unity package that exposes a C# API that uses an Objective-C bridge to interact with the Apple ReplaKit on iOS (created for LLIOS).
+Repository for Unity package that exposes a C# API that uses an Objective-C bridge to interact with video functionality on iOS devices, such as the Apple ReplayKit and AVAssetWriter. The package was created (and is still being developed) to serve [LLIOS](https://github.com/dioeos/LLIOS), a spatial computing app being developed by the [Link Lab](https://engineering.virginia.edu/labs-groups/link-lab) @ UVA.
