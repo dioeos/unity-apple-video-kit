@@ -21,5 +21,6 @@ bool replaykit_start_recording(void)
 
 bool replaykit_stop_recording(void)
 {
-    return [ReplayKitManager stopRecording];
+    [ReplayKitManager stopRecording];
+    return true;
 }
