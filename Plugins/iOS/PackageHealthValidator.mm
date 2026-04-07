@@ -1,4 +1,4 @@
-#import "NativeHelloBridge.h"
+#import "PackageHealthValidator.h"
 #import <Foundation/Foundation.h>
 #import <stdlib.h>
 #import <string.h>
@@ -9,14 +9,14 @@
 #import "UnityFramework-Swift.h"
 #endif
 
-bool nh_is_available(void)
+bool pv_is_available(void)
 {
-    return [NativeHelloManager isBridgeAvailable];
+    return [PackageHealthValidator isPackageHealthy];
 }
 
-const char* nh_say_hello(void)
+const char* pv_say_hello(void)
 {
-  NSString *result = [NativeHelloManager sayHello];
+  NSString *result = [PackageHealthValidator sayHello];
   const char *utf8 = [result UTF8String];
 
   char *copy = (char *)malloc(strlen(utf8) + 1);
