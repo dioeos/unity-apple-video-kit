@@ -20,25 +20,18 @@ import ARKit
 
     @objc public static func getTimestamp() -> Double
     {
-        return shared.lastTimestamp
-    }
-
-    internal func updateTimestamp(_ timestamp: Double)
-    {
-        lastTimestamp = timestamp
+        return shared.session?.currentFrame?.timestamp ?? 0.0
     }
 
     private func attachInternal(_ session: ARSession)
     {
         self.session?.delegate = nil
         self.session = session
-        session.delegate = self
         print("[SessionManager] Attached to ARSession")
     }
 
     private func detachInternal()
     {
-        session?.delegate = nil
         session = nil
         print("[SessionManager] Detached from ARSession")
     }
