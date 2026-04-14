@@ -38,6 +38,26 @@ namespace Dioeos.UnityAppleReplayKit
             return IntPtr.Zero;
 #endif
         }
-    }
 
+        public static void StartRecording()
+        {
+#if UNITY_IOS && !UNITY_EDITOR
+            SessionManageriOS.StartRecording();
+#endif
+        }
+
+        public static void UpdateRecording()
+        {
+#if UNITY_IOS && !UNITY_EDITOR
+            SessionManageriOS.UpdateRecording();
+#endif
+        }
+
+        public static void StopRecording()
+        {
+#if UNITY_IOS && !UNITY_EDITOR
+            SessionManageriOS.StopRecording();
+#endif
+        }
+    }
 }

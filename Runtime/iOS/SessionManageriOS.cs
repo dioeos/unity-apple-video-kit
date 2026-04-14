@@ -51,5 +51,35 @@ namespace Dioeos.UnityAppleReplayKit
 #endif
     }
 
+    [DllImport("__Internal")]
+    private static extern void sm_start_recording();
+
+    [DllImport("__Internal")]
+    private static extern void sm_update_recording();
+
+    [DllImport("__Internal")]
+    private static extern void sm_stop_recording();
+
+    internal static void StartRecording()
+    {
+#if UNITY_IOS && !UNITY_EDITOR
+      sm_start_recording();
+#endif
+    }
+
+    internal static void UpdateRecording()
+    {
+#if UNITY_IOS && !UNITY_EDITOR
+      sm_update_recording();
+#endif
+    }
+
+    internal static void StopRecording()
+    {
+#if UNITY_IOS && !UNITY_EDITOR
+      sm_stop_recording();
+#endif
+    }
+
   }
 }
