@@ -8,6 +8,7 @@ extern "C" {
 bool sm_attach_to_session(void *unitySessionNativePtr);
 void sm_detach_from_session(void);
 double sm_get_session_timestamp(void);
+void* sm_get_pixel_buffer(void);
 
 #ifdef __cplusplus
 }

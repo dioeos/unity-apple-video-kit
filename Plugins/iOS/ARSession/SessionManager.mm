@@ -48,3 +48,10 @@ double sm_get_session_timestamp(void)
 {
   return [SessionManager getTimestamp];
 }
+
+void* sm_get_pixel_buffer(void)
+{
+  CVPixelBufferRef pixelBuffer = [SessionManager getPixelBuffer];
+  return (void*)pixelBuffer;
+}
+

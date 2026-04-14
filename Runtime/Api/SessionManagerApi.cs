@@ -29,6 +29,15 @@ namespace Dioeos.UnityAppleReplayKit
             return 0.0;
 #endif
         }
+
+        public static IntPtr GetPixelBuffer()
+        {
+#if UNITY_IOS && !UNITY_EDITOR
+            return SessionManageriOS.GetPixelBuffer();
+#else
+            return IntPtr.Zero;
+#endif
+        }
     }
 
 }

@@ -39,5 +39,17 @@ namespace Dioeos.UnityAppleReplayKit
 #endif
     }
 
+    [DllImport("__Internal")]
+    private static extern IntPtr sm_get_pixel_buffer();
+
+    internal static IntPtr GetPixelBuffer()
+    {
+#if UNITY_IOS && !UNITY_EDITOR
+      return sm_get_pixel_buffer();
+#else
+      return IntPtr.Zero;
+#endif
+    }
+
   }
 }
