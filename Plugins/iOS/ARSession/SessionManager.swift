@@ -1,5 +1,6 @@
 import Foundation
 import ARKit
+import os.log
 
 @objc public final class SessionManager : NSObject
 {
@@ -24,7 +25,7 @@ import ARKit
     }
 
     @objc public static func startRecording() {
-        NSLog("[SessionManager] start recording!")
+        os_log("[SessionManager] start recording!", type: .default)
         guard let frame = shared.session?.currentFrame else {
             return
         }
@@ -34,12 +35,12 @@ import ARKit
             shared.isRecording = true
             shared.lastAppendedTimestamp = frame.timestamp
         } catch {
-            print("ERROR")
+            os_log("[SessionManager] ERROR: %{public}@", type: .error, error.localizedDescription)
         }
     }
 
     @objc public static func updateRecording() {
-        NSLog("[SessionManager] update recording!")
+        os_log("[SessionManager] update recording!", type: .default)
         guard shared.isRecording else { return }
         guard let frame = shared.session?.currentFrame else { return }
 
@@ -48,28 +49,28 @@ import ARKit
             try shared.recorder.append(frame: frame)
             shared.lastAppendedTimestamp = frame.timestamp
         } catch {
-            print("ERROR")
+            os_log("[SessionManager] ERROR: %{public}@", type: .error, error.localizedDescription)
         }
     }
 
     @objc public static func stopRecording() {
-        NSLog("[SessionManager] stop recording!")
+        os_log("[SessionManager] stop recording!", type: .default)
         guard shared.isRecording else { return }
 
         shared.isRecording = false
 
         shared.recorder.stop { url, error in
             if let error = error {
-                print("[SessionManager] Failed to stop recording: \(error)")
+                os_log("[SessionManager] Failed to stop recording: %{public}@", type: .error, error.localizedDescription)
             } else {
-                print("[SessionManager] Saved video to: \(url?.path ?? "unknown")")
+                os_log("[SessionManager] Saved video to: %{public}@", type: .default, url?.path ?? "unknown")
             }
         }
     }
 
     @objc public static func getTimestamp() -> Double
     {
-        NSLog("[SessionManager] Timestamp called")
+        os_log("[SessionManager] Timestamp called", type: .default)
         let elapsed = (shared.session?.currentFrame?.timestamp ?? 0.0) - shared.startTime
         return elapsed
     }
@@ -84,12 +85,12 @@ import ARKit
     {
         self.session?.delegate = nil
         self.session = session
-        print("[SessionManager] Attached to ARSession")
+        os_log("[SessionManager] Attached to ARSession", type: .default)
     }
 
     private func detachInternal()
     {
         session = nil
-        print("[SessionManager] Detached from ARSession")
+        os_log("[SessionManager] Detached from ARSession", type: .default)
     }
 }

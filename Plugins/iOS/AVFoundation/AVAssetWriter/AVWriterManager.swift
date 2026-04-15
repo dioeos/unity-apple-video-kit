@@ -3,6 +3,7 @@ import AVFoundation
 import ARKit
 import CoreMedia
 import CoreVideo
+import os.log
 
 final class AVWriterManager {
     private var writer: AVAssetWriter?
@@ -12,7 +13,7 @@ final class AVWriterManager {
     private var outputURL: URL?
 
     func start(with firstFrame: ARFrame) throws {
-        NSLog("[AVWriterManager] Called the start() function")
+        os_log("[AVWriterManager] Called the start() function", type: .default)
         let pixelBuffer = firstFrame.capturedImage
         let width = CVPixelBufferGetWidth(pixelBuffer)
         let height = CVPixelBufferGetHeight(pixelBuffer)
