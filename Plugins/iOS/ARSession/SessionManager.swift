@@ -24,6 +24,7 @@ import ARKit
     }
 
     @objc public static func startRecording() {
+        NSLog("[SessionManager] start recording!")
         guard let frame = shared.session?.currentFrame else {
             return
         }
@@ -38,6 +39,7 @@ import ARKit
     }
 
     @objc public static func updateRecording() {
+        NSLog("[SessionManager] update recording!")
         guard shared.isRecording else { return }
         guard let frame = shared.session?.currentFrame else { return }
 
@@ -51,6 +53,7 @@ import ARKit
     }
 
     @objc public static func stopRecording() {
+        NSLog("[SessionManager] stop recording!")
         guard shared.isRecording else { return }
 
         shared.isRecording = false
@@ -66,6 +69,7 @@ import ARKit
 
     @objc public static func getTimestamp() -> Double
     {
+        NSLog("[SessionManager] Timestamp called")
         let elapsed = (shared.session?.currentFrame?.timestamp ?? 0.0) - shared.startTime
         return elapsed
     }

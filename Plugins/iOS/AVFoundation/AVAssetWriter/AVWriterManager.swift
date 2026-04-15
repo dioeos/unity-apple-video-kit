@@ -12,6 +12,7 @@ final class AVWriterManager {
     private var outputURL: URL?
 
     func start(with firstFrame: ARFrame) throws {
+        NSLog("[AVWriterManager] Called the start() function")
         let pixelBuffer = firstFrame.capturedImage
         let width = CVPixelBufferGetWidth(pixelBuffer)
         let height = CVPixelBufferGetHeight(pixelBuffer)
