@@ -19,8 +19,12 @@ final class AVWriterManager {
         let height = CVPixelBufferGetHeight(pixelBuffer)
 
         let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-        let url = documentsURL.appendingPathComponent("ar_capture.mp4")
-        try? FileManager.default.removeItem(at: url)
+        
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
+        let dateString = formatter.string(from: Date())
+        let fileName = "\(dateString).mp4"
+        let url = documentsURL.appendingPathComponent(fileName)
 
         let writer = try AVAssetWriter(url: url, fileType: .mp4)
 
@@ -32,6 +36,7 @@ final class AVWriterManager {
 
         let input = AVAssetWriterInput(mediaType: .video, outputSettings: settings)
         input.expectsMediaDataInRealTime = true
+        input.transform = CGAffineTransform(rotationAngle: .pi / 2)
 
         guard writer.canAdd(input) else {
             throw NSError(domain: "Writer", code: -1)
