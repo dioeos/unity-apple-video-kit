@@ -31,6 +31,7 @@ import os.log
         }
 
         shared.recorderService.startRecording(with: session)
+        shared.isRecording = true
     }
 
     @objc public static func updateRecording() {
@@ -45,5 +46,6 @@ import os.log
 
     @objc public static func stopRecording() {
         shared.recorderService.stopRecording()
+        shared.isRecording = false
     }
 }
