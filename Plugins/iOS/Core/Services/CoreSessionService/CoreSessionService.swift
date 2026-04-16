@@ -11,10 +11,11 @@ public protocol ARSessionObserving {
 public final class CoreSessionService: NSObject {
     private let observer: ARSessionObserving
 
-    private var isRecording = false
-    private var lastAppendedTimestamp: Double = -1.0
+    public var currentSession: ARSession? {
+        observer.currentSession
+    }
 
-    override init() {
+    public override init() {
         self.observer = A_ARSessionObserver()
         super.init()
     }

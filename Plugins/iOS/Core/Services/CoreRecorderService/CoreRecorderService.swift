@@ -13,7 +13,7 @@ public final class CoreRecorderService: NSObject {
 
     private var isRecording = false
 
-    override init() {
+    public override init() {
         self.frameReader = A_ARFramesReader()
         super.init()
     }

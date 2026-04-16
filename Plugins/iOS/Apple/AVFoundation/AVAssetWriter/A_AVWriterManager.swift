@@ -28,7 +28,7 @@ public class A_AVWriterManager {
         try? FileManager.default.createDirectory(
             at: folderURL,
             withIntermediateDirectories: true,
-            attributes: nil,
+            attributes: nil
         )
 
 
