@@ -5,7 +5,7 @@ import CoreMedia
 import CoreVideo
 import os.log
 
-final class AVWriterManager {
+public class A_AVWriterManager {
     private var writer: AVAssetWriter?
     private var videoInput: AVAssetWriterInput?
     private var adaptor: AVAssetWriterInputPixelBufferAdaptor?

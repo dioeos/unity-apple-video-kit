@@ -1,4 +1,4 @@
-#import "SessionManager.h"
+#import "Coordinator.h"
 #import <Foundation/Foundation.h>
 #import <ARKit/ARKit.h>
 #import <stdlib.h>
@@ -17,7 +17,7 @@ typedef struct UnityXRNativeSessionPtr
 } UnityXRNativeSessionPtr;
 
 extern "C" {
-    bool sm_attach_to_session(void *unitySessionNativePtr)
+    bool attach_to_session(void *unitySessionNativePtr)
     {
       if (unitySessionNativePtr == NULL)
       {
@@ -36,38 +36,27 @@ extern "C" {
           return false;
       }
 
-      [SessionManager attach:arSession];
+      [Coordinator attach:arSession];
       return true;
     }
 
-    void sm_detach_from_session(void)
+    void detach_from_session(void)
     {
-      [SessionManager detach];
+      [Coordinator detach];
     }
 
-    double sm_get_session_timestamp(void)
+    void start_recording(void)
     {
-      return [SessionManager getTimestamp];
+      [Coordinator startRecording];
     }
 
-    void* sm_get_pixel_buffer(void)
+    void update_recording(void)
     {
-      CVPixelBufferRef pixelBuffer = [SessionManager getPixelBuffer];
-      return (void*)pixelBuffer;
+      [Coordinator updateRecording];
     }
 
-    void sm_start_recording(void)
+    void stop_recording(void)
     {
-      [SessionManager startRecording];
-    }
-
-    void sm_update_recording(void)
-    {
-      [SessionManager updateRecording];
-    }
-
-    void sm_stop_recording(void)
-    {
-      [SessionManager stopRecording];
+      [Coordinator stopRecording];
     }
 }
