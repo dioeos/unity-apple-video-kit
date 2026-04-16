@@ -2,14 +2,14 @@ import Foundation
 import ARKit
 import os.log
 
-public protocol ARSessionObserving {
+public protocol A_ARSessionObserving {
     var currentSession: ARSession? { get }
     func attachInternal(_ session: ARSession)
     func detachInternal()
 }
 
 public final class CoreSessionService: NSObject {
-    private let observer: ARSessionObserving
+    private let observer: A_ARSessionObserving
 
     public var currentSession: ARSession? {
         observer.currentSession

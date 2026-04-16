@@ -2,7 +2,7 @@ import ARKit
 import Foundation
 import os.log
 
-public class A_ARSessionObserver: ARSessionObserving {
+public class A_ARSessionObserver: A_ARSessionObserving {
     private weak var session: ARSession?
 
     public init() {}
