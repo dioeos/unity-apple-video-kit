@@ -2,18 +2,18 @@ import Foundation
 import ARKit
 import os.log
 
-public protocol ARFramesRecording {
+public protocol A_ARFramesRecording {
     func startRecording(with session: ARSession)
     func updateRecording(with session: ARSession)
     func stopRecording(completion: @escaping (URL?, Error?) -> Void)
 }
 
 public final class CoreRecorderService: NSObject {
-    private let frameReader: ARFramesRecording
+    private let frameReader: A_ARFramesRecording
 
     private var isRecording = false
 
-    override private init() {
+    override init() {
         self.frameReader = A_ARFramesReader()
         super.init()
     }

@@ -2,7 +2,7 @@ import Foundation
 import ARKit
 import os.log
 
-public class ARFramesReader: A_ARFramesRecording {
+public class A_ARFramesReader: A_ARFramesRecording {
     private let writerManager = A_AVWriterManager()
     // private let documentsManager = A_DocumentsManager()
 

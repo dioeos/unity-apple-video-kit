@@ -14,7 +14,7 @@ public final class CoreSessionService: NSObject {
     private var isRecording = false
     private var lastAppendedTimestamp: Double = -1.0
 
-    override private init() {
+    override init() {
         self.observer = A_ARSessionObserver()
         super.init()
     }
