@@ -19,12 +19,21 @@ final class AVWriterManager {
         let height = CVPixelBufferGetHeight(pixelBuffer)
 
         let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-        
+
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
         let dateString = formatter.string(from: Date())
+
+        let folderURL = documentsURL.appendingPathComponent(dateString)
+        try? FileManager.default.createDirectory(
+            at: folderURL,
+            withIntermediateDirectories: true,
+            attributes: nil,
+        )
+
+
         let fileName = "\(dateString).mp4"
-        let url = documentsURL.appendingPathComponent(fileName)
+        let url = folderURL.appendingPathComponent(fileName)
 
         let writer = try AVAssetWriter(url: url, fileType: .mp4)
 
