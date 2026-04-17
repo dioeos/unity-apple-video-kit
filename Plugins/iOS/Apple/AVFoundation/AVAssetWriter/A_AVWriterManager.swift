@@ -12,29 +12,13 @@ public class A_AVWriterManager {
     private var firstTimestamp: TimeInterval?
     private var outputURL: URL?
 
-    func start(with firstFrame: ARFrame) throws {
+    func start(with firstFrame: ARFrame, mp4Destination: URL, fileName: String) throws {
         os_log("[AVWriterManager] Called the start() function", type: .default)
         let pixelBuffer = firstFrame.capturedImage
         let width = CVPixelBufferGetWidth(pixelBuffer)
         let height = CVPixelBufferGetHeight(pixelBuffer)
 
-        let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
-        let dateString = formatter.string(from: Date())
-
-        let folderURL = documentsURL.appendingPathComponent(dateString)
-        try? FileManager.default.createDirectory(
-            at: folderURL,
-            withIntermediateDirectories: true,
-            attributes: nil
-        )
-
-
-        let fileName = "\(dateString).mp4"
-        let url = folderURL.appendingPathComponent(fileName)
-
+        let url = mp4Destination.appendingPathComponent(fileName)
         let writer = try AVAssetWriter(url: url, fileType: .mp4)
 
         let settings: [String: Any] = [

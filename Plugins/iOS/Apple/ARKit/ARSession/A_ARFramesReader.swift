@@ -9,7 +9,7 @@ public class A_ARFramesReader: A_ARFramesRecording {
     private var lastAppendedTimestamp: Double = -1.0
 
 
-    public func startRecording(with session: ARSession) {
+    public func startRecording(with session: ARSession, mp4Destination: URL, fileName: String) {
         os_log("[ARFramesReader] startRecording called.", type: .default)
         guard let frame = session.currentFrame else {
             os_log("[ARFramesReader] startRecording failed to get frame", type: .default)
@@ -17,7 +17,7 @@ public class A_ARFramesReader: A_ARFramesRecording {
         }
 
         do {
-            try writerManager.start(with: frame)
+            try writerManager.start(with: frame, mp4Destination: mp4Destination, fileName: fileName)
             lastAppendedTimestamp = frame.timestamp
         } catch {
             os_log("[ARFramesReader] ERROR: %{public}@", type: .error, error.localizedDescription)

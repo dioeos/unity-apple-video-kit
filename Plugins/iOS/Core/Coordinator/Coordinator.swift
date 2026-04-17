@@ -7,12 +7,14 @@ import os.log
 
     private let sessionService: CoreSessionService
     private let recorderService: CoreRecorderService
+    private let fileService: CoreFileService
 
     private var isRecording = false
 
     override private init() {
         self.sessionService = CoreSessionService()
         self.recorderService = CoreRecorderService()
+        self.fileService = CoreFileService()
         super.init()
     }
 
@@ -30,8 +32,32 @@ import os.log
             return
         }
 
-        shared.recorderService.startRecording(with: session)
-        shared.isRecording = true
+        do {
+            let documentsURL = try DirectoryUtils.documentsDirectory()
+            let timestamp = DateUtils.timestampString()
+
+            let mp4FolderDestination = try shared.fileService.createDirectory(
+                dirName: timestamp,
+                location: documentsURL
+            )
+
+            _ = try shared.fileService.createCsvFile(
+                fileName: timestamp,
+                location: mp4FolderDestination
+            )
+
+            let filename = "\(timestamp).mp4"
+
+            shared.recorderService.startRecording(
+                with: session,
+                mp4Destination: mp4FolderDestination,
+                fileName: filename
+            )
+            
+            shared.isRecording = true
+        } catch {
+            os_log("[Coordinator] Failed to prepare recording output: %{public}@", type: .error, error.localizedDescription)
+        }
     }
 
     @objc public static func updateRecording() {
