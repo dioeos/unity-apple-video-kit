@@ -1,9 +1,7 @@
 {
   "name": "NativeHelloBridge.Editor",
   "rootNamespace": "NativeHelloBridge.Editor",
-  "references": [
-    "NativeHelloBridge"
-  ],
+  "references": [],
   "includePlatforms": [
     "Editor"
   ],
