@@ -28,9 +28,9 @@ public class A_FileManager: A_FileManaging {
 
         if append {
             let handle = try FileHandle(forWritingTo: url)
-            defer { try? handle.close() }
-            try handle.seekToEnd()
-            try handle.write(contentsOf: data)
+            defer { handle.closeFile() }
+            handle.seekToEndOfFile()
+            handle.write(data)
         } else {
             try data.write(to: url, options: .atomic)
         }

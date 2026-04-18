@@ -31,11 +31,11 @@ public final class CoreCsvService: NSObject {
 
         let handle = try FileHandle(forWritingTo: fileURL)
         defer {
-            try? handle.close()
+            handle.closeFile()
         }
 
-        try handle.seekToEnd()
-        try handle.write(contentsOf: data)
+        handle.seekToEndOfFile()
+        handle.write(data)
     }
 
     private func escapeCsvField(_ value: String) -> String {
