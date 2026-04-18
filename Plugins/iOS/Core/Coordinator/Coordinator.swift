@@ -11,6 +11,7 @@ import os.log
 
     private var isRecording = false
     private var metadataFileURL: URL?
+    private var recordingStartTimestamp: Double?
 
     override private init() {
         self.arProviderService = CoreARProviderService()
@@ -55,6 +56,8 @@ import os.log
                 return
             }
 
+            shared.recordingStartTimestamp = ARFramesUtils.getFrameTimestamp(with: beginningFrame)
+
             if shared.recorderService.startRecording(
                 with: beginningFrame,
                 mp4Destination: mp4FolderDestination,
@@ -78,13 +81,19 @@ import os.log
             return
         }
 
+        guard let recordingStartTimestamp = shared.recordingStartTimestamp else {
+            os_log("[Coordinator] Cannot append metadata: No recording start timestamp available.", type: .error)
+            return
+        }
+
         guard let currFrame = shared.arProviderService.currentFrame else {
             os_log("[Coordinator] Failed to get the current frame", type: .error)
             return
         }
 
         if shared.recorderService.updateRecording(with: currFrame) {
-            let timestamp = String(ARFramesUtils.getFrameTimestamp(with: currFrame))
+            let elapsedTime = ARFramesUtils.getFrameTimestamp(with: currFrame) - recordingStartTimestamp
+            let timestamp = DateUtils.elapsedTimestampString(from: elapsedTime)
 
             do {
                 try shared.fileService.write(.csvRow(["", timestamp]), to: metadataFileURL)
@@ -98,5 +107,6 @@ import os.log
         shared.recorderService.stopRecording()
         shared.isRecording = false
         shared.metadataFileURL = nil
+        shared.recordingStartTimestamp = nil
     }
 }
