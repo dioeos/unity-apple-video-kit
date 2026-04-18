@@ -23,18 +23,13 @@ public protocol FileHeaderProviding {
     func header(for fileType: FileType) -> String?
 }
 
-// public protocol FileRowProviding {
-//     func writeRow(for fileType: FileType)
-// }
-
 public final class CoreFileService: NSObject {
     private let headerProvider: FileHeaderProviding
-    // private let rowProvider: FileRowProvidiing
 
     private let fileManager: A_FileManaging
     private let fileType: FileType
 
-    public override init(fileType: FileType) {
+    public init(fileType: FileType) {
         self.fileType = fileType
         self.fileManager = A_FileManager()
         self.headerProvider = HeaderProviderUtils()
