@@ -3,8 +3,8 @@ import os.log
 
 public class A_FileManager: A_FileManaging {
 
-    public func createFile(fileName: String, fileType: String, location: URL) throws -> URL {
-        let fileURL = location.appendingPathComponent(fileName + fileType)
+    public func createFile(fileName: String, fileType: FileType, location: URL) throws -> URL {
+        let fileURL = location.appendingPathComponent(fileName + fileType.rawValue)
         if !FileManager.default.fileExists(atPath: fileURL.path) {
             FileManager.default.createFile(atPath: fileURL.path, contents: nil, attributes: nil)
         }
@@ -20,4 +20,20 @@ public class A_FileManager: A_FileManaging {
         )
         return folderURL
     }
+
+    public func write(_ content: String, to url: URL, append: Bool) throws {
+        guard let data = content.data(using: .utf8) else {
+            throw NSError(domain: "A_FileManager", code: 1)
+        }
+
+        if append {
+            let handle = try FileHandle(forWritingTo: url)
+            defer { try? handle.close() }
+            try handle.seekToEnd()
+            try handle.write(contentsOf: data)
+        } else {
+            try data.write(to: url, options: .atomic)
+        }
+    }
+
 }

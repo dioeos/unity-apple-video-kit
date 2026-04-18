@@ -11,6 +11,10 @@ public class A_ARSessionObserver: A_ARSessionObserving {
         return session
     }
 
+    public var currentFrame: ARFrame? {
+        return session?.currentFrame
+    }
+
     public func attachInternal(_ session: ARSession) {
         self.session = session
         os_log("[ARSessionObserver] Attached to ARSession", type: .default)

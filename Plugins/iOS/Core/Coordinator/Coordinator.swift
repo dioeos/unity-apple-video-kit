@@ -5,29 +5,29 @@ import os.log
 @objc public final class Coordinator: NSObject {
     @objc public static let shared = Coordinator()
 
-    private let sessionService: CoreSessionService
+    private let arProviderService: CoreARProviderService
     private let recorderService: CoreRecorderService
     private let fileService: CoreFileService
 
     private var isRecording = false
 
     override private init() {
-        self.sessionService = CoreSessionService()
+        self.arProviderService = CoreARProviderService()
         self.recorderService = CoreRecorderService()
-        self.fileService = CoreFileService()
+        self.fileService = CoreFileService(fileType: .csv)
         super.init()
     }
 
     @objc public static func attach(_ session: ARSession) {
-        shared.sessionService.attach(session)
+        shared.arProviderService.attach(session)
     }
 
     @objc public static func detach() {
-        shared.sessionService.detach()
+        shared.arProviderService.detach()
     }
 
     @objc public static func startRecording() {
-        guard let session = shared.sessionService.currentSession else {
+        guard let session = shared.arProviderService.currentSession else {
             os_log("[Coordinator] Cannot start recording: No ARSession attached.", type: .error)
             return
         }
@@ -41,15 +41,20 @@ import os.log
                 location: documentsURL
             )
 
-            _ = try shared.fileService.createCsvFile(
+            _ = try shared.fileService.createMetadataFile(
                 fileName: timestamp,
                 location: mp4FolderDestination
             )
 
             let filename = "\(timestamp).mp4"
 
+            guard let beginningFrame = shared.arProviderService.currentFrame else {
+                os_log("[Coordinator] Failed to get beginning frame", type: .error)
+                return
+            }
+
             shared.recorderService.startRecording(
-                with: session,
+                with: beginningFrame,
                 mp4Destination: mp4FolderDestination,
                 fileName: filename
             )
@@ -62,12 +67,19 @@ import os.log
 
     @objc public static func updateRecording() {
         guard shared.isRecording else { return }
-        guard let session = shared.sessionService.currentSession else {
+        guard let session = shared.arProviderService.currentSession else {
             os_log("[Coordinator] Cannot update recording: No ARSession attached.", type: .error)
             return
         }
 
-        shared.recorderService.updateRecording(with: session)
+        guard let currFrame = shared.arProviderService.currentFrame else {
+            os_log("[Coordinator] Failed to get the current frame", type: .error)
+            return
+        }
+
+
+// TODO: append CSV data to csv file
+        shared.recorderService.updateRecording(with: currFrame)
     }
 
     @objc public static func stopRecording() {

@@ -4,18 +4,11 @@ import os.log
 
 public class A_ARFramesReader: A_ARFramesRecording {
     private let writerManager = A_AVWriterManager()
-    // private let documentsManager = A_DocumentsManager()
-
     private var lastAppendedTimestamp: Double = -1.0
 
 
-    public func startRecording(with session: ARSession, mp4Destination: URL, fileName: String) {
+    public func startRecording(with frame: ARFrame, mp4Destination: URL, fileName: String) {
         os_log("[ARFramesReader] startRecording called.", type: .default)
-        guard let frame = session.currentFrame else {
-            os_log("[ARFramesReader] startRecording failed to get frame", type: .default)
-            return
-        }
-
         do {
             try writerManager.start(with: frame, mp4Destination: mp4Destination, fileName: fileName)
             lastAppendedTimestamp = frame.timestamp
@@ -24,13 +17,8 @@ public class A_ARFramesReader: A_ARFramesRecording {
         }
     }
 
-    public func updateRecording(with session: ARSession) {
+    public func updateRecording(with frame: ARFrame) {
         os_log("[ARFramesReader] updateRecording called.", type: .default)
-        guard let frame = session.currentFrame else {
-            os_log("[ARFramesReader] updateRecording failed to get frame", type: .default)
-            return
-        }
-
         guard frame.timestamp > lastAppendedTimestamp else { return }
 
         do {
