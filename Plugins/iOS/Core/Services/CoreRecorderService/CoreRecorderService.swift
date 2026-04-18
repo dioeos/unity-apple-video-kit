@@ -3,8 +3,8 @@ import ARKit
 import os.log
 
 public protocol A_ARFramesRecording {
-    func startRecording(with frame: ARFrame, mp4Destination: URL, fileName: String)
-    func updateRecording(with frame: ARFrame)
+    func startRecording(with frame: ARFrame, mp4Destination: URL, fileName: String) -> Bool
+    func updateRecording(with frame: ARFrame) -> Bool
     func stopRecording(completion: @escaping (URL?, Error?) -> Void)
 }
 
@@ -18,18 +18,19 @@ public final class CoreRecorderService: NSObject {
         super.init()
     }
 
-    public func startRecording(with frame: ARFrame, mp4Destination: URL, fileName: String) {
-        frameReader.startRecording(
+    public func startRecording(with frame: ARFrame, mp4Destination: URL, fileName: String) -> Bool {
+        let didStart = frameReader.startRecording(
             with: frame,
             mp4Destination: mp4Destination,
             fileName: fileName
         )
-        isRecording = true
+        isRecording = didStart
+        return didStart
     }
 
-    public func updateRecording(with frame: ARFrame) {
-        guard isRecording else { return }
-        frameReader.updateRecording(with: frame)
+    public func updateRecording(with frame: ARFrame) -> Bool {
+        guard isRecording else { return false }
+        return frameReader.updateRecording(with: frame)
     }
 
     public func stopRecording() {

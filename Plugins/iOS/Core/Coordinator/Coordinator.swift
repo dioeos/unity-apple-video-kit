@@ -10,6 +10,7 @@ import os.log
     private let fileService: CoreFileService
 
     private var isRecording = false
+    private var metadataFileURL: URL?
 
     override private init() {
         self.arProviderService = CoreARProviderService()
@@ -27,7 +28,7 @@ import os.log
     }
 
     @objc public static func startRecording() {
-        guard let session = shared.arProviderService.currentSession else {
+        guard shared.arProviderService.currentSession != nil else {
             os_log("[Coordinator] Cannot start recording: No ARSession attached.", type: .error)
             return
         }
@@ -41,10 +42,11 @@ import os.log
                 location: documentsURL
             )
 
-            _ = try shared.fileService.createMetadataFile(
+            let fileURL = try shared.fileService.createMetadataFile(
                 fileName: timestamp,
                 location: mp4FolderDestination
             )
+            shared.metadataFileURL = fileURL
 
             let filename = "\(timestamp).mp4"
 
@@ -53,13 +55,12 @@ import os.log
                 return
             }
 
-            shared.recorderService.startRecording(
+            if shared.recorderService.startRecording(
                 with: beginningFrame,
                 mp4Destination: mp4FolderDestination,
                 fileName: filename
-            )
-            
-            shared.isRecording = true
+            ) { shared.isRecording = true }
+
         } catch {
             os_log("[Coordinator] Failed to prepare recording output: %{public}@", type: .error, error.localizedDescription)
         }
@@ -67,8 +68,13 @@ import os.log
 
     @objc public static func updateRecording() {
         guard shared.isRecording else { return }
-        guard let session = shared.arProviderService.currentSession else {
+        guard shared.arProviderService.currentSession != nil else {
             os_log("[Coordinator] Cannot update recording: No ARSession attached.", type: .error)
+            return
+        }
+
+        guard let metadataFileURL = shared.metadataFileURL else {
+            os_log("[Coordinator] Cannot append metadata: No metadata file available.", type: .error)
             return
         }
 
@@ -77,13 +83,20 @@ import os.log
             return
         }
 
+        if shared.recorderService.updateRecording(with: currFrame) {
+            let timestamp = String(ARFramesUtils.getFrameTimestamp(with: currFrame))
 
-// TODO: append CSV data to csv file
-        shared.recorderService.updateRecording(with: currFrame)
+            do {
+                try shared.fileService.write(.csvRow(["", timestamp]), to: metadataFileURL)
+            } catch {
+                os_log("[Coordinator] Failed to append metadata row: %{public}@", type: .error, error.localizedDescription)
+            }
+        }
     }
 
     @objc public static func stopRecording() {
         shared.recorderService.stopRecording()
         shared.isRecording = false
+        shared.metadataFileURL = nil
     }
 }
