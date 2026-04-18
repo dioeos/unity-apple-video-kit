@@ -12,6 +12,7 @@ import os.log
     private var isRecording = false
     private var metadataFileURL: URL?
     private var recordingStartTimestamp: Double?
+    private var frameCount = 0
 
     override private init() {
         self.arProviderService = CoreARProviderService()
@@ -62,7 +63,14 @@ import os.log
                 with: beginningFrame,
                 mp4Destination: mp4FolderDestination,
                 fileName: filename
-            ) { shared.isRecording = true }
+            ) {
+                shared.isRecording = true
+                let elapsedTime = ARFramesUtils.getFrameTimestamp(with: beginningFrame) - shared.recordingStartTimestamp!
+                let timestamp = DateUtils.elapsedTimestampString(from: elapsedTime)
+                shared.frameCount += 1
+
+                try shared.fileService.write(.csvRow([String(shared.frameCount), timestamp]), to: shared.metadataFileURL!)
+            }
 
         } catch {
             os_log("[Coordinator] Failed to prepare recording output: %{public}@", type: .error, error.localizedDescription)
@@ -94,9 +102,10 @@ import os.log
         if shared.recorderService.updateRecording(with: currFrame) {
             let elapsedTime = ARFramesUtils.getFrameTimestamp(with: currFrame) - recordingStartTimestamp
             let timestamp = DateUtils.elapsedTimestampString(from: elapsedTime)
+            shared.frameCount += 1
 
             do {
-                try shared.fileService.write(.csvRow(["", timestamp]), to: metadataFileURL)
+                try shared.fileService.write(.csvRow([String(shared.frameCount), timestamp]), to: metadataFileURL)
             } catch {
                 os_log("[Coordinator] Failed to append metadata row: %{public}@", type: .error, error.localizedDescription)
             }
