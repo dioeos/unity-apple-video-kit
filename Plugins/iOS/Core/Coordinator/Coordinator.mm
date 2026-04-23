@@ -10,11 +10,16 @@
 #import "UnityFramework-Swift.h"
 #endif
 
-typedef struct UnityXRNativeSessionPtr
+static ARCameraPoseBox *MakePoseBox(ARCameraPoseNative pose)
 {
-  int version;
-  void *session;
-} UnityXRNativeSessionPtr;
+    return [[ARCameraPoseBox alloc] initWithTx:pose.tx
+                                            ty:pose.ty
+                                            tz:pose.tz
+                                            qx:pose.qx
+                                            qy:pose.qy
+                                            qz:pose.qz
+                                            qw:pose.qw];
+}
 
 extern "C" {
     bool attach_to_session(void *unitySessionNativePtr)
@@ -45,14 +50,16 @@ extern "C" {
       [Coordinator detach];
     }
 
-    void start_recording(void)
+    void start_recording(ARCameraPoseNative pose)
     {
-      [Coordinator startRecording];
+      ARCameraPoseBox *poseBox = MakePoseBox(pose);
+      [Coordinator startRecordingWithPose:poseBox];
     }
 
-    void update_recording(void)
+    void update_recording(ARCameraPoseNative pose)
     {
-      [Coordinator updateRecording];
+      ARCameraPoseBox *poseBox = MakePoseBox(pose);
+      [Coordinator updateRecordingWithPose:poseBox];
     }
 
     void stop_recording(void)

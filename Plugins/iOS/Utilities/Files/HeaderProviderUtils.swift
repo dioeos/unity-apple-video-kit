@@ -4,7 +4,7 @@ public struct HeaderProviderUtils: FileHeaderProviding {
     public func header(for fileType: FileType) -> String? {
         switch fileType {
         case .csv:
-            return "frame,timestamp"
+            return "frame_id,timestamp,image_path,depth_path,tx,ty,tz,qx,qy,qz,qw"
         case .json:
             return "{}"
         case .txt:

@@ -21,17 +21,17 @@ namespace Dioeos.UnityAppleReplayKit
 #endif
     }
 
-    public static void StartRecording()
+    public static void StartRecording(Transform cameraTransform)
     {
 #if UNITY_IOS && !UNITY_EDITOR
-      CoordinatoriOS.StartRecording();
+      CoordinatoriOS.StartRecording(cameraTransform);
 #endif
     }
-    
-    public static void UpdateRecording()
+
+    public static void UpdateRecording(Transform cameraTransform)
     {
 #if UNITY_IOS && !UNITY_EDITOR
-      CoordinatoriOS.UpdateRecording();
+      CoordinatoriOS.UpdateRecording(cameraTransform);
 #endif
     }
     public static void StopRecording()

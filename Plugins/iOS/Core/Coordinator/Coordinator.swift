@@ -11,6 +11,8 @@ import os.log
 
     private var isRecording = false
     private var metadataFileURL: URL?
+    private var imagePathURL: URL?
+    private var depthPathURL: URL?
     private var recordingStartTimestamp: Double?
     private var frameCount = 0
 
@@ -29,7 +31,9 @@ import os.log
         shared.arProviderService.detach()
     }
 
-    @objc public static func startRecording() {
+
+    @objc(startRecordingWithPose:)
+    public static func startRecording(with pose: ARCameraPoseBox) {
         guard shared.arProviderService.currentSession != nil else {
             os_log("[Coordinator] Cannot start recording: No ARSession attached.", type: .error)
             return
@@ -69,7 +73,22 @@ import os.log
                 let timestamp = DateUtils.elapsedTimestampString(from: elapsedTime)
                 shared.frameCount += 1
 
-                try shared.fileService.write(.csvRow([String(shared.frameCount), timestamp]), to: shared.metadataFileURL!)
+// TODO: Add first frame stuff from below as well
+// TODO: Create image file here and then extract RGB data and append and then append path
+// TODO: Create image file here and then extract depth data and append and then append path
+                try shared.fileService.write(.csvRow([
+                    String(shared.frameCount),
+                    timestamp,
+                    "",
+                    "",
+                    String(pose.tx),
+                    String(pose.ty),
+                    String(pose.tz),
+                    String(pose.qx),
+                    String(pose.qy),
+                    String(pose.qz),
+                    String(pose.qw)
+                ]), to: shared.metadataFileURL!)
             }
 
         } catch {
@@ -77,7 +96,8 @@ import os.log
         }
     }
 
-    @objc public static func updateRecording() {
+    @objc(updateRecordingWithPose:)
+    public static func updateRecording(with pose: ARCameraPoseBox) {
         guard shared.isRecording else { return }
         guard shared.arProviderService.currentSession != nil else {
             os_log("[Coordinator] Cannot update recording: No ARSession attached.", type: .error)
@@ -104,8 +124,23 @@ import os.log
             let timestamp = DateUtils.elapsedTimestampString(from: elapsedTime)
             shared.frameCount += 1
 
+// TODO: Should get cameraPose (oreintation and position) from Unity
+// TODO: Extract RGB data and create separate file path in dir and CSV points to it
+// TODO: Extract Depth data and create separate file path in dir and CSV points to it
             do {
-                try shared.fileService.write(.csvRow([String(shared.frameCount), timestamp]), to: metadataFileURL)
+                try shared.fileService.write(.csvRow([
+                    String(shared.frameCount),
+                    timestamp,
+                    "",
+                    "",
+                    String(pose.tx),
+                    String(pose.ty),
+                    String(pose.tz),
+                    String(pose.qx),
+                    String(pose.qy),
+                    String(pose.qz),
+                    String(pose.qw)
+                ]), to: metadataFileURL)
             } catch {
                 os_log("[Coordinator] Failed to append metadata row: %{public}@", type: .error, error.localizedDescription)
             }

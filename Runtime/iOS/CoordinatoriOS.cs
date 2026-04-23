@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
+using UnityEngine;
 
 namespace Dioeos.UnityAppleReplayKit
 {
@@ -29,25 +30,27 @@ namespace Dioeos.UnityAppleReplayKit
 
 
     [DllImport("__Internal")]
-    private static extern void start_recording();
+    private static extern void start_recording(ARCameraPoseNative pose);
 
     [DllImport("__Internal")]
-    private static extern void update_recording();
+    private static extern void update_recording(ARCameraPoseNative pose);
 
     [DllImport("__Internal")]
     private static extern void stop_recording();
 
-    internal static void StartRecording()
+    internal static void StartRecording(Transform cameraTransform)
     {
 #if UNITY_IOS && !UNITY_EDITOR
-      start_recording();
+      ARCameraPoseNative pose = ARCameraPoseNative.ConvertTransformToPose(cameraTransform);
+      start_recording(pose);
 #endif
     }
 
-    internal static void UpdateRecording()
+    internal static void UpdateRecording(Transform cameraTransform)
     {
 #if UNITY_IOS && !UNITY_EDITOR
-      update_recording();
+      ARCameraPoseNative pose = ARCameraPoseNative.ConvertTransformToPose(cameraTransform);
+      update_recording(pose);
 #endif
     }
 
