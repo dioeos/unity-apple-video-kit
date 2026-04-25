@@ -11,8 +11,8 @@ import os.log
 
     private var isRecording = false
     private var metadataFileURL: URL?
-    private var imagePathURL: URL?
-    private var depthPathURL: URL?
+    private var imageDataFileURL: URL?
+    private var depthDataFileURL: URL?
     private var recordingStartTimestamp: Double?
     private var frameCount = 0
 
@@ -48,11 +48,17 @@ import os.log
                 location: documentsURL
             )
 
-            let fileURL = try shared.fileService.createMetadataFile(
+            shared.metadataFileURL = try shared.fileService.createMetadataFile(
                 fileName: timestamp,
-                location: mp4FolderDestination
+                location: mp4FolderDestination,
+                headers: "frame_id,timestamp,image_path,depth_path,tx,ty,tz,qx,qy,qz,qw"
             )
-            shared.metadataFileURL = fileURL
+
+            shared.depthDataFileURL = try shared.fileService.createMetadataFile(
+                filename: "Depth_Data",
+                location: mp4FolderDestination,
+                headers: "depth_map"
+            )
 
             let filename = "\(timestamp).mp4"
 
@@ -72,6 +78,8 @@ import os.log
                 let elapsedTime = ARFramesUtils.getFrameTimestamp(with: beginningFrame) - shared.recordingStartTimestamp!
                 let timestamp = DateUtils.elapsedTimestampString(from: elapsedTime)
                 shared.frameCount += 1
+                let depthMap: CVPixelBuffer = beginningFrame.depthMap
+                let confidenceMap: CVPixelBuffer? = depthMap.confidenceMap
 
 // TODO: Add first frame stuff from below as well
 // TODO: Create image file here and then extract RGB data and append and then append path

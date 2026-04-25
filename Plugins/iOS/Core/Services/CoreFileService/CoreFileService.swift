@@ -40,16 +40,13 @@ public final class CoreFileService: NSObject {
         return try fileManager.createDirectory(dirName: dirName, location: location)
     }
 
-    public func createMetadataFile(fileName: String, location: URL) throws -> URL {
+    public func createMetadataFile(fileName: String, location: URL, headers: String) throws -> URL {
         let fileURL =  try fileManager.createFile(
             fileName: fileName, 
             fileType: self.fileType, 
             location: location
         )
-
-        if let header = headerProvider.header(for: fileType) {
-            try fileManager.write(header + "\n", to: fileURL, append: false)
-        }
+        try fileManager.write(headers + "\n", to: fileURL, append: false)
 
         return fileURL
     }
