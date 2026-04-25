@@ -8,6 +8,7 @@ import os.log
     private let arProviderService: CoreARProviderService
     private let recorderService: CoreRecorderService
     private let fileService: CoreFileService
+    private let depthService: CoreDepthService
 
     private var isRecording = false
     private var metadataFileURL: URL?
@@ -20,6 +21,7 @@ import os.log
         self.arProviderService = CoreARProviderService()
         self.recorderService = CoreRecorderService()
         self.fileService = CoreFileService(fileType: .csv)
+        self.depthService = CoreDepthService()
         super.init()
     }
 
@@ -57,7 +59,13 @@ import os.log
             shared.depthDataFileURL = try shared.fileService.createMetadataFile(
                 filename: "Depth_Data",
                 location: mp4FolderDestination,
-                headers: "depth_map"
+                headers: "depth_map,confidence_map"
+            )
+
+            share.imageDataFileURL = try shared.fileService.createMetadataFile(
+                filename: "Depth_Data",
+                location: mp4FolderDestination,
+                headers: "r,g,b"
             )
 
             let filename = "\(timestamp).mp4"
@@ -78,17 +86,15 @@ import os.log
                 let elapsedTime = ARFramesUtils.getFrameTimestamp(with: beginningFrame) - shared.recordingStartTimestamp!
                 let timestamp = DateUtils.elapsedTimestampString(from: elapsedTime)
                 shared.frameCount += 1
-                let depthMap: CVPixelBuffer = beginningFrame.depthMap
-                let confidenceMap: CVPixelBuffer? = depthMap.confidenceMap
 
-// TODO: Add first frame stuff from below as well
-// TODO: Create image file here and then extract RGB data and append and then append path
-// TODO: Create image file here and then extract depth data and append and then append path
+                let depthMap: CVPixelBuffer? = depthService.getDepthMap(from: beginningFrame)
+                let confidenceMap: CVPixelBuffer? = depthService.getConfidenceMap(for: beginningFrame)
+
                 try shared.fileService.write(.csvRow([
                     String(shared.frameCount),
                     timestamp,
-                    "",
-                    "",
+                    String(shared.imageDataFileURL),
+                    String(shared.depthDataFileURL),
                     String(pose.tx),
                     String(pose.ty),
                     String(pose.tz),
@@ -97,6 +103,7 @@ import os.log
                     String(pose.qz),
                     String(pose.qw)
                 ]), to: shared.metadataFileURL!)
+
             }
 
         } catch {
