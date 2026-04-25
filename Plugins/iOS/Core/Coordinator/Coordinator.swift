@@ -57,13 +57,13 @@ import os.log
             )
 
             shared.depthDataFileURL = try shared.fileService.createMetadataFile(
-                filename: "Depth_Data",
+                fileName: "Depth_Data",
                 location: mp4FolderDestination,
                 headers: "depth_map,confidence_map"
             )
 
-            share.imageDataFileURL = try shared.fileService.createMetadataFile(
-                filename: "Depth_Data",
+            shared.imageDataFileURL = try shared.fileService.createMetadataFile(
+                fileName: "Image_Data",
                 location: mp4FolderDestination,
                 headers: "r,g,b"
             )
@@ -87,14 +87,14 @@ import os.log
                 let timestamp = DateUtils.elapsedTimestampString(from: elapsedTime)
                 shared.frameCount += 1
 
-                let depthMap: CVPixelBuffer? = depthService.getDepthMap(from: beginningFrame)
-                let confidenceMap: CVPixelBuffer? = depthService.getConfidenceMap(for: beginningFrame)
+                let depthMap: CVPixelBuffer? = shared.depthService.getDepthMap(from: beginningFrame)
+                let confidenceMap: CVPixelBuffer? = shared.depthService.getConfidenceMap(from: beginningFrame)
 
                 try shared.fileService.write(.csvRow([
                     String(shared.frameCount),
                     timestamp,
-                    String(shared.imageDataFileURL),
-                    String(shared.depthDataFileURL),
+                    shared.imageDataFileURL?.path ?? "",
+                    shared.depthDataFileURL?.path ?? "",
                     String(pose.tx),
                     String(pose.ty),
                     String(pose.tz),
