@@ -1,3 +1,4 @@
+
 import Foundation
 import ARKit
 import os.log
@@ -12,8 +13,10 @@ import os.log
 
     private var isRecording = false
     private var metadataFileURL: URL?
-    private var imageDataFileURL: URL?
-    private var depthDataFileURL: URL?
+
+    private var depthFramesDirectoryURL: URL?
+    private var confidenceFramesDirectoryURL: URL?
+
     private var recordingStartTimestamp: Double?
     private var frameCount = 0
 
@@ -33,132 +36,137 @@ import os.log
         shared.arProviderService.detach()
     }
 
-
     @objc(startRecordingWithPose:)
     public static func startRecording(with pose: ARCameraPoseBox) {
-        guard shared.arProviderService.currentSession != nil else {
-            os_log("[Coordinator] Cannot start recording: No ARSession attached.", type: .error)
-            return
-        }
+        guard shared.arProviderService.currentSession != nil else { return }
 
         do {
             let documentsURL = try DirectoryUtils.documentsDirectory()
             let timestamp = DateUtils.timestampString()
 
-            let mp4FolderDestination = try shared.fileService.createDirectory(
+            let folder = try shared.fileService.createDirectory(
                 dirName: timestamp,
                 location: documentsURL
             )
 
+            // metadata CSV
             shared.metadataFileURL = try shared.fileService.createMetadataFile(
                 fileName: timestamp,
-                location: mp4FolderDestination,
-                headers: "frame_id,timestamp,image_path,depth_path,tx,ty,tz,qx,qy,qz,qw"
+                location: folder,
+                headers: "frame_id,timestamp,depth_path,confidence_path,depth_width,depth_height,depth_format,confidence_width,confidence_height,confidence_format,tx,ty,tz,qx,qy,qz,qw"
             )
 
-            shared.depthDataFileURL = try shared.fileService.createMetadataFile(
-                fileName: "Depth_Data",
-                location: mp4FolderDestination,
-                headers: "depth_map,confidence_map"
+            // subfolders
+            shared.depthFramesDirectoryURL = try shared.fileService.createDirectory(
+                dirName: "depth",
+                location: folder
             )
 
-            shared.imageDataFileURL = try shared.fileService.createMetadataFile(
-                fileName: "Image_Data",
-                location: mp4FolderDestination,
-                headers: "r,g,b"
+            shared.confidenceFramesDirectoryURL = try shared.fileService.createDirectory(
+                dirName: "confidence",
+                location: folder
             )
 
-            let filename = "\(timestamp).mp4"
+            guard let frame = shared.arProviderService.currentFrame else { return }
 
-            guard let beginningFrame = shared.arProviderService.currentFrame else {
-                os_log("[Coordinator] Failed to get beginning frame", type: .error)
-                return
-            }
-
-            shared.recordingStartTimestamp = ARFramesUtils.getFrameTimestamp(with: beginningFrame)
+            shared.recordingStartTimestamp = ARFramesUtils.getFrameTimestamp(with: frame)
 
             if shared.recorderService.startRecording(
-                with: beginningFrame,
-                mp4Destination: mp4FolderDestination,
-                fileName: filename
+                with: frame,
+                mp4Destination: folder,
+                fileName: "\(timestamp).mp4"
             ) {
                 shared.isRecording = true
-                let elapsedTime = ARFramesUtils.getFrameTimestamp(with: beginningFrame) - shared.recordingStartTimestamp!
-                let timestamp = DateUtils.elapsedTimestampString(from: elapsedTime)
-                shared.frameCount += 1
-
-                let depthMap: CVPixelBuffer? = shared.depthService.getDepthMap(from: beginningFrame)
-                let confidenceMap: CVPixelBuffer? = shared.depthService.getConfidenceMap(from: beginningFrame)
-
-                try shared.fileService.write(.csvRow([
-                    String(shared.frameCount),
-                    timestamp,
-                    shared.imageDataFileURL?.path ?? "",
-                    shared.depthDataFileURL?.path ?? "",
-                    String(pose.tx),
-                    String(pose.ty),
-                    String(pose.tz),
-                    String(pose.qx),
-                    String(pose.qy),
-                    String(pose.qz),
-                    String(pose.qw)
-                ]), to: shared.metadataFileURL!)
-
+                shared.frameCount = 0
+                writeFrame(frame: frame, pose: pose)
             }
 
         } catch {
-            os_log("[Coordinator] Failed to prepare recording output: %{public}@", type: .error, error.localizedDescription)
+            os_log("Start recording failed: %{public}@", error.localizedDescription)
         }
     }
 
     @objc(updateRecordingWithPose:)
     public static func updateRecording(with pose: ARCameraPoseBox) {
         guard shared.isRecording else { return }
-        guard shared.arProviderService.currentSession != nil else {
-            os_log("[Coordinator] Cannot update recording: No ARSession attached.", type: .error)
-            return
+        guard let frame = shared.arProviderService.currentFrame else { return }
+
+        if shared.recorderService.updateRecording(with: frame) {
+            writeFrame(frame: frame, pose: pose)
         }
+    }
 
-        guard let metadataFileURL = shared.metadataFileURL else {
-            os_log("[Coordinator] Cannot append metadata: No metadata file available.", type: .error)
-            return
-        }
+    private static func writeFrame(frame: ARFrame, pose: ARCameraPoseBox) {
+        guard let metadataFileURL = shared.metadataFileURL else { return }
 
-        guard let recordingStartTimestamp = shared.recordingStartTimestamp else {
-            os_log("[Coordinator] Cannot append metadata: No recording start timestamp available.", type: .error)
-            return
-        }
+        shared.frameCount += 1
 
-        guard let currFrame = shared.arProviderService.currentFrame else {
-            os_log("[Coordinator] Failed to get the current frame", type: .error)
-            return
-        }
+        let timestamp = DateUtils.elapsedTimestampString(
+            from: ARFramesUtils.getFrameTimestamp(with: frame) - shared.recordingStartTimestamp!
+        )
 
-        if shared.recorderService.updateRecording(with: currFrame) {
-            let elapsedTime = ARFramesUtils.getFrameTimestamp(with: currFrame) - recordingStartTimestamp
-            let timestamp = DateUtils.elapsedTimestampString(from: elapsedTime)
-            shared.frameCount += 1
+        let depthMap = shared.depthService.getDepthMap(from: frame)
+        let confidenceMap = shared.depthService.getConfidenceMap(from: frame)
 
-// TODO: Should get cameraPose (oreintation and position) from Unity
-// TODO: Extract RGB data and create separate file path in dir and CSV points to it
-// TODO: Extract Depth data and create separate file path in dir and CSV points to it
-            do {
-                try shared.fileService.write(.csvRow([
-                    String(shared.frameCount),
-                    timestamp,
-                    "",
-                    "",
-                    String(pose.tx),
-                    String(pose.ty),
-                    String(pose.tz),
-                    String(pose.qx),
-                    String(pose.qy),
-                    String(pose.qz),
-                    String(pose.qw)
-                ]), to: metadataFileURL)
-            } catch {
-                os_log("[Coordinator] Failed to append metadata row: %{public}@", type: .error, error.localizedDescription)
+        var depthPath = ""
+        var confidencePath = ""
+
+        var depthW = "", depthH = "", depthF = ""
+        var confW = "", confH = "", confF = ""
+
+        do {
+            if let depthMap,
+               let dir = shared.depthFramesDirectoryURL {
+
+                let url = dir.appendingPathComponent("depth_\(shared.frameCount).bin")
+
+                try shared.depthService.writeDepthMap(depthMap, to: url)
+
+                depthPath = url.lastPathComponent
+                depthW = String(CVPixelBufferGetWidth(depthMap))
+                depthH = String(CVPixelBufferGetHeight(depthMap))
+                depthF = String(CVPixelBufferGetPixelFormatType(depthMap))
             }
+
+            if let confidenceMap,
+               let dir = shared.confidenceFramesDirectoryURL {
+
+                let url = dir.appendingPathComponent("confidence_\(shared.frameCount).bin")
+
+                try shared.depthService.writeConfidenceMap(confidenceMap, to: url)
+
+                confidencePath = url.lastPathComponent
+                confW = String(CVPixelBufferGetWidth(confidenceMap))
+                confH = String(CVPixelBufferGetHeight(confidenceMap))
+                confF = String(CVPixelBufferGetPixelFormatType(confidenceMap))
+            }
+
+            try shared.fileService.write(.csvRow([
+                String(shared.frameCount),
+                timestamp,
+
+                depthPath,
+                confidencePath,
+
+                depthW,
+                depthH,
+                depthF,
+
+                confW,
+                confH,
+                confF,
+
+                String(pose.tx),
+                String(pose.ty),
+                String(pose.tz),
+                String(pose.qx),
+                String(pose.qy),
+                String(pose.qz),
+                String(pose.qw)
+            ]), to: metadataFileURL)
+
+        } catch {
+            os_log("Frame write failed: %{public}@", error.localizedDescription)
         }
     }
 
@@ -166,6 +174,5 @@ import os.log
         shared.recorderService.stopRecording()
         shared.isRecording = false
         shared.metadataFileURL = nil
-        shared.recordingStartTimestamp = nil
     }
 }
