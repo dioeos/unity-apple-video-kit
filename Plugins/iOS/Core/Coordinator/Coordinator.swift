@@ -1,4 +1,3 @@
-
 import Foundation
 import ARKit
 import os.log
@@ -10,12 +9,14 @@ import os.log
     private let recorderService: CoreRecorderService
     private let fileService: CoreFileService
     private let depthService: CoreDepthService
+    private let imageService: CoreImageService
 
     private var isRecording = false
     private var metadataFileURL: URL?
 
     private var depthFramesDirectoryURL: URL?
     private var confidenceFramesDirectoryURL: URL?
+    private var rgbImagesDirectoryURL: URL?
 
     private var recordingStartTimestamp: Double?
     private var frameCount = 0
@@ -25,6 +26,7 @@ import os.log
         self.recorderService = CoreRecorderService()
         self.fileService = CoreFileService(fileType: .csv)
         self.depthService = CoreDepthService()
+        self.imageService = CoreImageService()
         super.init()
     }
 
@@ -49,14 +51,12 @@ import os.log
                 location: documentsURL
             )
 
-            // metadata CSV
             shared.metadataFileURL = try shared.fileService.createMetadataFile(
                 fileName: timestamp,
                 location: folder,
-                headers: "frame_id,timestamp,depth_path,confidence_path,depth_width,depth_height,depth_format,confidence_width,confidence_height,confidence_format,tx,ty,tz,qx,qy,qz,qw"
+                headers: "frame_id,timestamp,rgb_path,depth_path,confidence_path,depth_width,depth_height,depth_format,confidence_width,confidence_height,confidence_format,tx,ty,tz,qx,qy,qz,qw"
             )
 
-            // subfolders
             shared.depthFramesDirectoryURL = try shared.fileService.createDirectory(
                 dirName: "depth",
                 location: folder
@@ -64,6 +64,11 @@ import os.log
 
             shared.confidenceFramesDirectoryURL = try shared.fileService.createDirectory(
                 dirName: "confidence",
+                location: folder
+            )
+
+            shared.rgbImagesDirectoryURL = try shared.fileService.createDirectory(
+                dirName: "rgb_images",
                 location: folder
             )
 
@@ -98,16 +103,18 @@ import os.log
 
     private static func writeFrame(frame: ARFrame, pose: ARCameraPoseBox) {
         guard let metadataFileURL = shared.metadataFileURL else { return }
+        guard let recordingStartTimestamp = shared.recordingStartTimestamp else { return }
 
         shared.frameCount += 1
 
         let timestamp = DateUtils.elapsedTimestampString(
-            from: ARFramesUtils.getFrameTimestamp(with: frame) - shared.recordingStartTimestamp!
+            from: ARFramesUtils.getFrameTimestamp(with: frame) - recordingStartTimestamp
         )
 
         let depthMap = shared.depthService.getDepthMap(from: frame)
         let confidenceMap = shared.depthService.getConfidenceMap(from: frame)
 
+        var rgbPath = ""
         var depthPath = ""
         var confidencePath = ""
 
@@ -115,6 +122,16 @@ import os.log
         var confW = "", confH = "", confF = ""
 
         do {
+            if let dir = shared.rgbImagesDirectoryURL {
+                let url = try shared.imageService.writeRGBImage(
+                    from: frame,
+                    to: dir,
+                    frameCount: shared.frameCount
+                )
+
+                rgbPath = url.lastPathComponent
+            }
+
             if let depthMap,
                let dir = shared.depthFramesDirectoryURL {
 
@@ -145,6 +162,7 @@ import os.log
                 String(shared.frameCount),
                 timestamp,
 
+                rgbPath,
                 depthPath,
                 confidencePath,
 
@@ -174,5 +192,10 @@ import os.log
         shared.recorderService.stopRecording()
         shared.isRecording = false
         shared.metadataFileURL = nil
+        shared.depthFramesDirectoryURL = nil
+        shared.confidenceFramesDirectoryURL = nil
+        shared.rgbImagesDirectoryURL = nil
+        shared.recordingStartTimestamp = nil
+        shared.frameCount = 0
     }
 }
