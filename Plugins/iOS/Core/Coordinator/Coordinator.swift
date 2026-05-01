@@ -34,21 +34,13 @@ import os.log
 
     @objc public static func attach(_ session: ARSession) {
         shared.arProviderService.attach(session)
-
-        startLocationUpdates()
+        shared.locationService.requestPermission()
+        shared.locationService.start()
     }
 
     @objc public static func detach() {
-        stopLocationUpdates()
-        shared.arProviderService.detach()
-    }
-
-    @objc public static func startLocationUpdates() {
-        shared.locationService.requestPermissionAndStart()
-    }
-
-    @objc public static func stopLocationUpdates() {
         shared.locationService.stop()
+        shared.arProviderService.detach()
     }
 
     @objc(startRecordingWithPose:)
@@ -235,18 +227,16 @@ import os.log
     }
 
     @objc public static func latestLocationString() -> String {
-        shared.locationService.requestPermissionAndStart()
+            guard let location = shared.locationService.getLatestLocation() else {
+                return "Location unavailable"
+            }
 
-        guard let location = shared.locationService.getLatestLocation() else {
-            return "Location unavailable"
+            return String(
+                format: "Lat: %.6f\nLon: %.6f\nAlt: %.2f m\nAccuracy: %.2f m",
+                location.coordinate.latitude,
+                location.coordinate.longitude,
+                location.altitude,
+                location.horizontalAccuracy
+            )
         }
-
-        return String(
-            format: "Lat: %.6f\nLon: %.6f\nAlt: %.2f m\nAccuracy: %.2f m",
-            location.coordinate.latitude,
-            location.coordinate.longitude,
-            location.altitude,
-            location.horizontalAccuracy
-        )
-    }
 }
