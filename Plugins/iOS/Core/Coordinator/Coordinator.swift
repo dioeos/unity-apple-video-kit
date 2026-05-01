@@ -10,6 +10,7 @@ import os.log
     private let fileService: CoreFileService
     private let depthService: CoreDepthService
     private let imageService: CoreImageService
+    private let locationService: CoreLocationService
 
     private var isRecording = false
     private var metadataFileURL: URL?
@@ -27,14 +28,19 @@ import os.log
         self.fileService = CoreFileService(fileType: .csv)
         self.depthService = CoreDepthService()
         self.imageService = CoreImageService()
+        self.locationService = CoreLocationService()
         super.init()
     }
 
     @objc public static func attach(_ session: ARSession) {
         shared.arProviderService.attach(session)
+
+        shared.locationService.requestPermission()
+        shared.locationService.start()
     }
 
     @objc public static func detach() {
+        shared.locationService.stop()
         shared.arProviderService.detach()
     }
 
@@ -54,7 +60,7 @@ import os.log
             shared.metadataFileURL = try shared.fileService.createMetadataFile(
                 fileName: timestamp,
                 location: folder,
-                headers: "frame_id,timestamp,rgb_path,depth_path,confidence_path,depth_width,depth_height,depth_format,confidence_width,confidence_height,confidence_format,tx,ty,tz,qx,qy,qz,qw"
+                headers: "frame_id,timestamp,rgb_path,depth_path,confidence_path,depth_width,depth_height,depth_format,confidence_width,confidence_height,confidence_format,tx,ty,tz,qx,qy,qz,qw,latitude,longitude,altitude,horizontal_accuracy"
             )
 
             shared.depthFramesDirectoryURL = try shared.fileService.createDirectory(
@@ -107,6 +113,7 @@ import os.log
 
         shared.frameCount += 1
 
+
         let timestamp = DateUtils.elapsedTimestampString(
             from: ARFramesUtils.getFrameTimestamp(with: frame) - recordingStartTimestamp
         )
@@ -158,6 +165,13 @@ import os.log
                 confF = String(CVPixelBufferGetPixelFormatType(confidenceMap))
             }
 
+            let location = shared.locationService.getLatestLocation()
+
+            let latitude = location.map { String($0.coordinate.latitude) } ?? ""
+            let longitude = location.map { String($0.coordinate.longitude) } ?? ""
+            let altitude = location.map { String($0.altitude) } ?? ""
+            let horizontalAccuracy = location.map { String($0.horizontalAccuracy) } ?? ""
+
             try shared.fileService.write(.csvRow([
                 String(shared.frameCount),
                 timestamp,
@@ -180,7 +194,12 @@ import os.log
                 String(pose.qx),
                 String(pose.qy),
                 String(pose.qz),
-                String(pose.qw)
+                String(pose.qw),
+
+                latitude,
+                longitude,
+                altitude,
+                horizontalAccuracy,
             ]), to: metadataFileURL)
 
         } catch {
