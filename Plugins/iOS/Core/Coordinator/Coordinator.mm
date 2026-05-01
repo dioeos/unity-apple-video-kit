@@ -69,8 +69,17 @@ extern "C" {
 
     const char* latest_location_string(void) {
         NSString *location = [Coordinator latestLocationString];
+        if (location == nil)
+        {
+            return NULL;
+        }
 
         const char *utf8 = [location UTF8String];
+        if (utf8 == NULL)
+        {
+            return NULL;
+        }
+
         char *result = strdup(utf8);
 
         return result;

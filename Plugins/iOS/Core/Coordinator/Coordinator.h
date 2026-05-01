@@ -1,6 +1,8 @@
 #ifndef Coordinator_h
 #define Coordinator_h
 
+#include <stdbool.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
