@@ -1,15 +1,14 @@
 #import "Coordinator.h"
 #import <Foundation/Foundation.h>
 #import <ARKit/ARKit.h>
+#import <CoreLocation/CoreLocation.h>
 #import <stdlib.h>
 #import <string.h>
 
 #if __has_include(<UnityFramework/UnityFramework-Swift.h>)
-#import <CoreLocation/CoreLocation.h>
 #import <UnityFramework/UnityFramework-Swift.h>
 #else
 #import "UnityFramework-Swift.h"
-#import <CoreLocation/CoreLocation.h>
 #endif
 
 static ARCameraPoseBox *MakePoseBox(ARCameraPoseNative pose)
