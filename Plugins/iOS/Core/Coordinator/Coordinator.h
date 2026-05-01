@@ -1,8 +1,6 @@
 #ifndef Coordinator_h
 #define Coordinator_h
 
-#include <stdbool.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -38,6 +36,9 @@ void start_recording(ARCameraPoseNative pose);
 void update_recording(ARCameraPoseNative pose);
 void stop_recording(void);
 
+/*
+Location lifecycle functions
+*/
 const char* latest_location_string(void);
 void free_native_string(const char* str);
 
