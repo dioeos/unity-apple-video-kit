@@ -227,14 +227,14 @@ import os.log
     }
 
     @objc public static func latestLocationString() -> String {
-            guard let location = shared.locationService.getLatestLocation() else {
-                return "Location unavailable"
-            }
-
-            return String(
-                format: "Latitude: %.6f | Longitude: %.6f",
-                location.coordinate.latitude,
-                location.coordinate.longitude,
-            )
+        guard let location = shared.locationService.getLatestLocation() else {
+            return "Location unavailable"
         }
+
+        return String(
+            format: "Latitude: %.6f | Longitude: %.6f ",
+            location.coordinate.latitude,
+            location.coordinate.longitude
+        )
+    }
 }
