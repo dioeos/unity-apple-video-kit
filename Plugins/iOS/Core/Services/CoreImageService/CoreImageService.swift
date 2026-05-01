@@ -22,7 +22,8 @@ public final class CoreImageService: NSObject {
         let outputURL = rgbImagesDirectoryURL.appendingPathComponent(fileName)
 
         let pixelBuffer = frame.capturedImage
-        let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
+        let ciImage = CIImage(cvPixelBuffer: pixelBuffer).oriented(.right)
+
         let colorSpace = CGColorSpaceCreateDeviceRGB()
 
         try context.writeJPEGRepresentation(
