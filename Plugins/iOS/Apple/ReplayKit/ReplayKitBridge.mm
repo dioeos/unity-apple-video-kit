@@ -1,5 +1,6 @@
 #import "ReplayKitBridge.h"
 #import <Foundation/Foundation.h>
+#import <CoreLocation/CoreLocation.h>
 #import <stdlib.h>
 #import <string.h>
 
