@@ -36,6 +36,9 @@ void start_recording(ARCameraPoseNative pose);
 void update_recording(ARCameraPoseNative pose);
 void stop_recording(void);
 
+const char* latest_location_string(void);
+void free_native_string(const char* str);
+
 #ifdef __cplusplus
 }
 #endif
