@@ -35,13 +35,20 @@ import os.log
     @objc public static func attach(_ session: ARSession) {
         shared.arProviderService.attach(session)
 
-        shared.locationService.requestPermission()
-        shared.locationService.start()
+        startLocationUpdates()
     }
 
     @objc public static func detach() {
-        shared.locationService.stop()
+        stopLocationUpdates()
         shared.arProviderService.detach()
+    }
+
+    @objc public static func startLocationUpdates() {
+        shared.locationService.requestPermissionAndStart()
+    }
+
+    @objc public static func stopLocationUpdates() {
+        shared.locationService.stop()
     }
 
     @objc(startRecordingWithPose:)
@@ -60,7 +67,7 @@ import os.log
             shared.metadataFileURL = try shared.fileService.createMetadataFile(
                 fileName: timestamp,
                 location: folder,
-                headers: "frame_id,timestamp,rgb_path,depth_path,confidence_path,depth_width,depth_height,depth_format,confidence_width,confidence_height,confidence_format,tx,ty,tz,qx,qy,qz,qw,latitude,longitude,altitude,horizontal_accuracy"
+                headers: "frame_id,timestamp,rgb_path,depth_path,confidence_path,depth_width,depth_height,depth_format,confidence_width,confidence_height,confidence_format,intrinsics_fx,intrinsics_fy,intrinsics_cx,intrinsics_cy,intrinsics_width,intrinsics_height,tx,ty,tz,qx,qy,qz,qw,latitude,longitude,altitude,horizontal_accuracy"
             )
 
             shared.depthFramesDirectoryURL = try shared.fileService.createDirectory(
@@ -117,6 +124,8 @@ import os.log
         let timestamp = DateUtils.elapsedTimestampString(
             from: ARFramesUtils.getFrameTimestamp(with: frame) - recordingStartTimestamp
         )
+
+        let cameraIntrinsics = ARFramesUtils.getCameraIntrinsics(with: frame)
 
         let depthMap = shared.depthService.getDepthMap(from: frame)
         let confidenceMap = shared.depthService.getConfidenceMap(from: frame)
@@ -188,6 +197,13 @@ import os.log
                 confH,
                 confF,
 
+                String(cameraIntrinsics.fx),
+                String(cameraIntrinsics.fy),
+                String(cameraIntrinsics.cx),
+                String(cameraIntrinsics.cy),
+                String(cameraIntrinsics.width),
+                String(cameraIntrinsics.height),
+
                 String(pose.tx),
                 String(pose.ty),
                 String(pose.tz),
@@ -219,6 +235,8 @@ import os.log
     }
 
     @objc public static func latestLocationString() -> String {
+        shared.locationService.requestPermissionAndStart()
+
         guard let location = shared.locationService.getLatestLocation() else {
             return "Location unavailable"
         }
