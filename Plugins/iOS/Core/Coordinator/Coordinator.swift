@@ -232,11 +232,9 @@ import os.log
             }
 
             return String(
-                format: "Lat: %.6f\nLon: %.6f\nAlt: %.2f m\nAccuracy: %.2f m",
+                format: "Latitude: %.6f | Longitude: %.6f",
                 location.coordinate.latitude,
                 location.coordinate.longitude,
-                location.altitude,
-                location.horizontalAccuracy
             )
         }
 }
