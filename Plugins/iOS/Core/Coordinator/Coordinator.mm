@@ -66,4 +66,17 @@ extern "C" {
     {
       [Coordinator stopRecording];
     }
+
+    const char* latest_location_string(void) {
+        NSString *location = [Coordinator latestLocationString];
+
+        const char *utf8 = [location UTF8String];
+        char *result = strdup(utf8);
+
+        return result;
+    }
+
+    void free_native_string(const char* str) {
+        free((void*)str);
+    }
 }

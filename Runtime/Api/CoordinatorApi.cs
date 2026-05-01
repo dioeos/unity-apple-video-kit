@@ -40,5 +40,14 @@ namespace Dioeos.UnityAppleReplayKit
       CoordinatoriOS.StopRecording();
 #endif
     }
+
+    public static string GetLatestLocationString()
+    {
+#if UNITY_IOS && !UNITY_EDITOR
+      return CoordinatoriOS.GetLatestLocationString();
+#else
+      return "Location unavailable";
+#endif
+    }
   }
 }

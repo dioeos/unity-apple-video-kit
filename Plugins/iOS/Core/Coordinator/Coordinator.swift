@@ -217,4 +217,18 @@ import os.log
         shared.recordingStartTimestamp = nil
         shared.frameCount = 0
     }
+
+    @objc public static func latestLocationString() -> String {
+        guard let location = shared.locationService.getLatestLocation() else {
+            return "Location unavailable"
+        }
+
+        return String(
+            format: "Lat: %.6f\nLon: %.6f\nAlt: %.2f m\nAccuracy: %.2f m",
+            location.coordinate.latitude,
+            location.coordinate.longitude,
+            location.altitude,
+            location.horizontalAccuracy
+        )
+    }
 }

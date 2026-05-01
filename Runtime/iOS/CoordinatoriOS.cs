@@ -60,5 +60,27 @@ namespace Dioeos.UnityAppleReplayKit
       stop_recording();
 #endif
     }
+
+    [DllImport("__Internal")]
+    private static extern IntPtr latest_location_string();
+
+    [DllImport("__Internal")]
+    private static extern void free_native_string(IntPtr str);
+
+    internal static string GetLatestLocationString()
+    {
+#if UNITY_IOS && !UNITY_EDITOR
+      IntPtr ptr = latest_location_string();
+      if (ptr != IntPtr.Zero)
+      {
+        string result = Marshal.PtrToStringAnsi(ptr);
+        free_native_string(ptr);
+        return result;
+      }
+      return "Location unavailable";
+#else
+      return "Location unavailable";
+#endif
+    }
   }
 }
